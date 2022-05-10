@@ -1,17 +1,19 @@
 defmodule AVLTree.Node.View do
   @moduledoc false
 
+  alias AVLTree.Node
+
   def node_view(nil) do
     {1, 0, [" "]}
   end
 
-  def node_view({v, _, nil, nil}) do
+  def node_view(%Node{value: v, height: _, left: nil, right: nil}) do
     v_str = inspect(v)
     v_width = String.length(v_str)
     {v_width, div(v_width, 2), [v_str]}
   end
 
-  def node_view({v, _h, l, r}) do
+  def node_view(%Node{value: v, height: _h, left: l, right: r}) do
     v_str = inspect(v)
     v_width = String.length(v_str)
     v_left_width = div(v_width, 2)

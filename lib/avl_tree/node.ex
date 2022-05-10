@@ -11,54 +11,58 @@ defmodule AVLTree.Node do
             big_rotate_right: 1,
             balance: 1}
 
-  def put(nil, value, _less), do: {value, 1, nil, nil}
+  defstruct [:value, :height, :left, :right]
 
-  def put({v, h, l, r}, value, less) do
+  def put(nil, value, _less), do: %__MODULE__{value: value, height: 1, left: nil, right: nil}
+
+  def put(%__MODULE__{value: v, height: h, left: l, right: r}, value, less) do
     cond do
       less.(value, v) ->
         case put(l, value, less) do
-          {:update, l} -> {:update, {v, h, l, r}}
-          l -> balance({v, h, l, r})
+          {:update, l} -> {:update, %__MODULE__{value: v, height: h, left: l, right: r}}
+          l -> balance(%__MODULE__{value: v, height: h, left: l, right: r})
         end
 
       less.(v, value) ->
         case put(r, value, less) do
-          {:update, r} -> {:update, {v, h, l, r}}
-          r -> balance({v, h, l, r})
+          {:update, r} -> {:update, %__MODULE__{value: v, height: h, left: l, right: r}}
+          r -> balance(%__MODULE__{value: v, height: h, left: l, right: r})
         end
 
       true ->
-        {:update, {value, h, l, r}}
+        {:update, %__MODULE__{value: value, height: h, left: l, right: r}}
     end
   end
 
-  def put_lower(nil, value, _less), do: {value, 1, nil, nil}
+  def put_lower(nil, value, _less),
+    do: %__MODULE__{value: value, height: 1, left: nil, right: nil}
 
-  def put_lower({v, h, l, r}, value, less) do
+  def put_lower(%__MODULE__{value: v, height: h, left: l, right: r}, value, less) do
     balance(
       if less.(v, value) do
-        {v, h, l, put_lower(r, value, less)}
+        %__MODULE__{value: v, height: h, left: l, right: put_lower(r, value, less)}
       else
-        {v, h, put_lower(l, value, less), r}
+        %__MODULE__{value: v, height: h, left: put_lower(l, value, less), right: r}
       end
     )
   end
 
-  def put_upper(nil, value, _less), do: {value, 1, nil, nil}
+  def put_upper(nil, value, _less),
+    do: %__MODULE__{value: value, height: 1, left: nil, right: nil}
 
-  def put_upper({v, h, l, r}, value, less) do
+  def put_upper(%__MODULE__{value: v, height: h, left: l, right: r}, value, less) do
     balance(
       if less.(value, v) do
-        {v, h, put_upper(l, value, less), r}
+        %__MODULE__{value: v, height: h, left: put_upper(l, value, less), right: r}
       else
-        {v, h, l, put_upper(r, value, less)}
+        %__MODULE__{value: v, height: h, left: l, right: put_upper(r, value, less)}
       end
     )
   end
 
   def member?(nil, _value, _less), do: false
 
-  def member?({v, _h, l, r}, value, less) do
+  def member?(%__MODULE__{value: v, height: _h, left: l, right: r}, value, less) do
     cond do
       less.(value, v) -> member?(l, value, less)
       less.(v, value) -> member?(r, value, less)
@@ -68,7 +72,7 @@ defmodule AVLTree.Node do
 
   def get(nil, _value, default, _less), do: default
 
-  def get({v, _h, l, r}, value, default, less) do
+  def get(%__MODULE__{value: v, height: _h, left: l, right: r}, value, default, less) do
     cond do
       less.(value, v) -> get(l, value, default, less)
       less.(v, value) -> get(r, value, default, less)
@@ -77,16 +81,20 @@ defmodule AVLTree.Node do
   end
 
   def get_first(nil, default), do: default
-  def get_first({v, _h, nil, _r}, _default), do: v
-  def get_first({_v, _h, l, _r}, default), do: get_first(l, default)
+  def get_first(%__MODULE__{value: v, height: _h, left: nil, right: _r}, _default), do: v
+
+  def get_first(%__MODULE__{value: _v, height: _h, left: l, right: _r}, default),
+    do: get_first(l, default)
 
   def get_last(nil, default), do: default
-  def get_last({v, _h, _l, nil}, _default), do: v
-  def get_last({_v, _h, _l, r}, default), do: get_last(r, default)
+  def get_last(%__MODULE__{value: v, height: _h, left: _l, right: nil}, _default), do: v
+
+  def get_last(%__MODULE__{value: _v, height: _h, left: _l, right: r}, default),
+    do: get_last(r, default)
 
   def get_lower(nil, _value, default, _less), do: default
 
-  def get_lower({v, _h, l, r}, value, default, less) do
+  def get_lower(%__MODULE__{value: v, height: _h, left: l, right: r}, value, default, less) do
     case less.(v, value) do
       true ->
         get_lower(r, value, default, less)
@@ -107,7 +115,7 @@ defmodule AVLTree.Node do
 
   def get_upper(nil, _value, default, _less), do: default
 
-  def get_upper({v, _h, l, r}, value, default, less) do
+  def get_upper(%__MODULE__{value: v, height: _h, left: l, right: r}, value, default, less) do
     case less.(value, v) do
       true ->
         get_upper(l, value, default, less)
@@ -127,22 +135,22 @@ defmodule AVLTree.Node do
   end
 
   def height(nil), do: 0
-  def height({_v, h, _l, _r}), do: h
-  def value({v, _h, _l, _r}), do: v
+  def height(%__MODULE__{value: _v, height: h, left: _l, right: _r}), do: h
+  def value(%__MODULE__{value: v, height: _h, left: _l, right: _r}), do: v
 
   def delete(nil, _value, _less), do: {false, nil}
 
-  def delete({v, h, l, r} = a, value, less) do
+  def delete(%__MODULE__{value: v, height: h, left: l, right: r} = a, value, less) do
     cond do
       less.(value, v) ->
         case delete(l, value, less) do
-          {true, l} -> {true, balance({v, h, l, r})}
+          {true, l} -> {true, balance(%__MODULE__{value: v, height: h, left: l, right: r})}
           {false, _} -> {false, a}
         end
 
       less.(v, value) ->
         case delete(r, value, less) do
-          {true, r} -> {true, balance({v, h, l, r})}
+          {true, r} -> {true, balance(%__MODULE__{value: v, height: h, left: l, right: r})}
           {false, _} -> {false, a}
         end
 
@@ -153,18 +161,18 @@ defmodule AVLTree.Node do
 
   def delete_lower(nil, _value, _less), do: {false, nil}
 
-  def delete_lower({v, h, l, r} = a, value, less) do
+  def delete_lower(%__MODULE__{value: v, height: h, left: l, right: r} = a, value, less) do
     case less.(v, value) do
       true ->
         case delete_lower(r, value, less) do
-          {true, r} -> {true, balance({v, h, l, r})}
+          {true, r} -> {true, balance(%__MODULE__{value: v, height: h, left: l, right: r})}
           {false, _} -> {false, a}
         end
 
       false ->
         case delete_lower(l, value, less) do
           {true, l} ->
-            {true, balance({v, h, l, r})}
+            {true, balance(%__MODULE__{value: v, height: h, left: l, right: r})}
 
           {false, _} ->
             case less.(value, v) do
@@ -177,18 +185,18 @@ defmodule AVLTree.Node do
 
   def delete_upper(nil, _value, _less), do: {false, nil}
 
-  def delete_upper({v, h, l, r} = a, value, less) do
+  def delete_upper(%__MODULE__{value: v, height: h, left: l, right: r} = a, value, less) do
     case less.(value, v) do
       true ->
         case delete_upper(l, value, less) do
-          {true, l} -> {true, balance({v, h, l, r})}
+          {true, l} -> {true, balance(%__MODULE__{value: v, height: h, left: l, right: r})}
           {false, _} -> {false, a}
         end
 
       false ->
         case delete_upper(r, value, less) do
           {true, r} ->
-            {true, balance({v, h, l, r})}
+            {true, balance(%__MODULE__{value: v, height: h, left: l, right: r})}
 
           {false, _} ->
             case less.(v, value) do
@@ -201,10 +209,14 @@ defmodule AVLTree.Node do
 
   def iter_lower(root), do: iter_lower_impl(root, [])
 
-  def iter_lower_impl({_v, _h, l, _r} = a, iter), do: iter_lower_impl(l, [a | iter])
+  def iter_lower_impl(%__MODULE__{value: _v, height: _h, left: l, right: _r} = a, iter),
+    do: iter_lower_impl(l, [a | iter])
+
   def iter_lower_impl(nil, iter), do: iter
 
-  def next([{_v, _h, _, r} = n | tail]), do: {n, iter_lower_impl(r, tail)}
+  def next([%__MODULE__{value: _v, height: _h, left: _, right: r} = n | tail]),
+    do: {n, iter_lower_impl(r, tail)}
+
   def next([]), do: :none
 
   def view(root) do
@@ -212,33 +224,53 @@ defmodule AVLTree.Node do
     Enum.join(canvas, "\n")
   end
 
-  defp fix_height({v, _h, l, r}) do
-    {v, max(height(l), height(r)) + 1, l, r}
+  defp fix_height(%__MODULE__{value: v, height: _h, left: l, right: r}) do
+    %__MODULE__{value: v, height: max(height(l), height(r)) + 1, left: l, right: r}
   end
 
-  defp rotate_left({v, h, l, {rv, rh, rl, rr}}) do
-    fix_height({rv, rh, fix_height({v, h, l, rl}), rr})
+  defp rotate_left(%__MODULE__{
+         value: v,
+         height: h,
+         left: l,
+         right: %__MODULE__{value: rv, height: rh, left: rl, right: rr}
+       }) do
+    fix_height(%__MODULE__{
+      value: rv,
+      height: rh,
+      left: fix_height(%__MODULE__{value: v, height: h, left: l, right: rl}),
+      right: rr
+    })
   end
 
-  defp rotate_right({v, h, {lv, lh, ll, lr}, r}) do
-    fix_height({lv, lh, ll, fix_height({v, h, lr, r})})
+  defp rotate_right(%__MODULE__{
+         value: v,
+         height: h,
+         left: %__MODULE__{value: lv, height: lh, left: ll, right: lr},
+         right: r
+       }) do
+    fix_height(%__MODULE__{
+      value: lv,
+      height: lh,
+      left: ll,
+      right: fix_height(%__MODULE__{value: v, height: h, left: lr, right: r})
+    })
   end
 
-  defp big_rotate_left({v, h, l, r}) do
-    rotate_left({v, h, l, rotate_right(r)})
+  defp big_rotate_left(%__MODULE__{value: v, height: h, left: l, right: r}) do
+    rotate_left(%__MODULE__{value: v, height: h, left: l, right: rotate_right(r)})
   end
 
-  defp big_rotate_right({v, h, l, r}) do
-    rotate_right({v, h, rotate_left(l), r})
+  defp big_rotate_right(%__MODULE__{value: v, height: h, left: l, right: r}) do
+    rotate_right(%__MODULE__{value: v, height: h, left: rotate_left(l), right: r})
   end
 
   defp balance(a) do
     a = fix_height(a)
-    {_v, _h, l, r} = a
+    %__MODULE__{value: _v, height: _h, left: l, right: r} = a
 
     cond do
       height(r) - height(l) == 2 ->
-        {_rv, _rh, rl, rr} = r
+        %__MODULE__{value: _rv, height: _rh, left: rl, right: rr} = r
 
         if height(rl) <= height(rr) do
           rotate_left(a)
@@ -247,7 +279,7 @@ defmodule AVLTree.Node do
         end
 
       height(l) - height(r) == 2 ->
-        {_lv, _lh, ll, lr} = l
+        %__MODULE__{value: _lv, height: _lh, left: ll, right: lr} = l
 
         if height(lr) <= height(ll) do
           rotate_right(a)
@@ -260,33 +292,33 @@ defmodule AVLTree.Node do
     end
   end
 
-  defp delete_node({_v, _h, l, r}) do
+  defp delete_node(%__MODULE__{value: _v, height: _h, left: l, right: r}) do
     if height(r) > height(l) do
-      {{v, h, _l, _r}, r} = delete_min(r)
-      balance({v, h, l, r})
+      {%__MODULE__{value: v, height: h, left: _l, right: _r}, r} = delete_min(r)
+      balance(%__MODULE__{value: v, height: h, left: l, right: r})
     else
       if l == nil do
         r
       else
-        {{v, h, _l, _r}, l} = delete_max(l)
-        balance({v, h, l, r})
+        {%__MODULE__{value: v, height: h, left: _l, right: _r}, l} = delete_max(l)
+        balance(%__MODULE__{value: v, height: h, left: l, right: r})
       end
     end
   end
 
-  defp delete_min({v, h, l, r} = a) do
+  defp delete_min(%__MODULE__{value: v, height: h, left: l, right: r} = a) do
     if l do
       {m, l} = delete_min(l)
-      {m, balance({v, h, l, r})}
+      {m, balance(%__MODULE__{value: v, height: h, left: l, right: r})}
     else
       {a, r}
     end
   end
 
-  defp delete_max({v, h, l, r} = a) do
+  defp delete_max(%__MODULE__{value: v, height: h, left: l, right: r} = a) do
     if r do
       {m, r} = delete_max(r)
-      {m, balance({v, h, l, r})}
+      {m, balance(%__MODULE__{value: v, height: h, left: l, right: r})}
     else
       {a, l}
     end

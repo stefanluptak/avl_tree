@@ -1,9 +1,8 @@
 defmodule AVLTreeTest do
   use ExUnit.Case
+  alias AVLTree.Node
 
   doctest AVLTree, except: [view: 1]
-
-  use ExUnit.Case
 
   test "protocols" do
     tree1 = Enum.into([5, 9, 3, 8, 1, 6, 7], AVLTree.new())
@@ -43,8 +42,27 @@ defmodule AVLTreeTest do
     #     ┌┴┐
     #       7
     assert tree.root ==
-             {5, 4, {3, 2, {1, 1, nil, nil}, nil},
-              {8, 3, {6, 2, nil, {7, 1, nil, nil}}, {9, 1, nil, nil}}}
+             %Node{
+               value: 5,
+               height: 4,
+               left: %Node{
+                 value: 3,
+                 height: 2,
+                 left: %Node{value: 1, height: 1, left: nil, right: nil},
+                 right: nil
+               },
+               right: %Node{
+                 value: 8,
+                 height: 3,
+                 left: %Node{
+                   value: 6,
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: 7, height: 1, left: nil, right: nil}
+                 },
+                 right: %Node{value: 9, height: 1, left: nil, right: nil}
+               }
+             }
 
     tree = Enum.into([11, 10, 12], tree)
     assert Enum.to_list(tree) == [1, 3, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -59,8 +77,37 @@ defmodule AVLTreeTest do
     # ┌┴┐ ┌┴┐   ┌┴─┐
     # 1     7     12
     assert tree.root ==
-             {8, 4, {5, 3, {3, 2, {1, 1, nil, nil}, nil}, {6, 2, nil, {7, 1, nil, nil}}},
-              {10, 3, {9, 1, nil, nil}, {11, 2, nil, {12, 1, nil, nil}}}}
+             %Node{
+               value: 8,
+               height: 4,
+               left: %Node{
+                 value: 5,
+                 height: 3,
+                 left: %Node{
+                   value: 3,
+                   height: 2,
+                   left: %Node{value: 1, height: 1, left: nil, right: nil},
+                   right: nil
+                 },
+                 right: %Node{
+                   value: 6,
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: 7, height: 1, left: nil, right: nil}
+                 }
+               },
+               right: %Node{
+                 value: 10,
+                 height: 3,
+                 left: %Node{value: 9, height: 1, left: nil, right: nil},
+                 right: %Node{
+                   value: 11,
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: 12, height: 1, left: nil, right: nil}
+                 }
+               }
+             }
 
     tree = AVLTree.put(tree, 4)
     assert Enum.to_list(tree) == [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -75,9 +122,42 @@ defmodule AVLTreeTest do
     # ┌┴┐ ┌┴┐   ┌┴─┐
     # 1 4   7     12
     assert tree.root ==
-             {8, 4,
-              {5, 3, {3, 2, {1, 1, nil, nil}, {4, 1, nil, nil}}, {6, 2, nil, {7, 1, nil, nil}}},
-              {10, 3, {9, 1, nil, nil}, {11, 2, nil, {12, 1, nil, nil}}}}
+             %Node{
+               value: 8,
+               height: 4,
+               left: %Node{
+                 value: 5,
+                 height: 3,
+                 left: %Node{
+                   value: 3,
+                   height: 2,
+                   left: %Node{
+                     value: 1,
+                     height: 1,
+                     left: nil,
+                     right: nil
+                   },
+                   right: %Node{value: 4, height: 1, left: nil, right: nil}
+                 },
+                 right: %Node{
+                   value: 6,
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: 7, height: 1, left: nil, right: nil}
+                 }
+               },
+               right: %Node{
+                 value: 10,
+                 height: 3,
+                 left: %Node{value: 9, height: 1, left: nil, right: nil},
+                 right: %Node{
+                   value: 11,
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: 12, height: 1, left: nil, right: nil}
+                 }
+               }
+             }
 
     assert tree == AVLTree.put(tree, 7)
   end
@@ -144,8 +224,32 @@ defmodule AVLTreeTest do
     #   ┌┴───┐       ┌───┴┐
     #     {2, 20} {7, 70}
     assert tree.root ==
-             {{5, 50}, 3, {{1, 10}, 2, nil, {{2, 20}, 1, nil, nil}},
-              {{9, 90}, 2, {{7, 70}, 1, nil, nil}, nil}}
+             %Node{
+               value: {5, 50},
+               height: 3,
+               left: %Node{
+                 value: {1, 10},
+                 height: 2,
+                 left: nil,
+                 right: %Node{
+                   value: {2, 20},
+                   height: 1,
+                   left: nil,
+                   right: nil
+                 }
+               },
+               right: %Node{
+                 value: {9, 90},
+                 height: 2,
+                 left: %Node{
+                   value: {7, 70},
+                   height: 1,
+                   left: nil,
+                   right: nil
+                 },
+                 right: nil
+               }
+             }
 
     tree = AVLTree.put(tree, {7, 700})
     assert Enum.to_list(tree) == [{1, 10}, {2, 20}, {5, 50}, {7, 700}, {9, 90}]
@@ -158,8 +262,32 @@ defmodule AVLTreeTest do
     #   ┌┴───┐        ┌───┴┐
     #     {2, 20} {7, 700}
     assert tree.root ==
-             {{5, 50}, 3, {{1, 10}, 2, nil, {{2, 20}, 1, nil, nil}},
-              {{9, 90}, 2, {{7, 700}, 1, nil, nil}, nil}}
+             %Node{
+               value: {5, 50},
+               height: 3,
+               left: %Node{
+                 value: {1, 10},
+                 height: 2,
+                 left: nil,
+                 right: %Node{
+                   value: {2, 20},
+                   height: 1,
+                   left: nil,
+                   right: nil
+                 }
+               },
+               right: %Node{
+                 value: {9, 90},
+                 height: 2,
+                 left: %Node{
+                   value: {7, 700},
+                   height: 1,
+                   left: nil,
+                   right: nil
+                 },
+                 right: nil
+               }
+             }
 
     assert AVLTree.put_lower(tree, {8, 80}) == AVLTree.put_upper(tree, {8, 80})
     assert AVLTree.put_lower(tree, {8, 80}) == AVLTree.put(tree, {8, 80})
@@ -190,9 +318,47 @@ defmodule AVLTreeTest do
     #                ┌───┴───┐
     #             {7, 73} {7, 71}
     assert tree.root ==
-             {{5, 50}, 4, {{1, 10}, 2, nil, {{2, 20}, 1, nil, nil}},
-              {{7, 700}, 3, {{7, 72}, 2, {{7, 73}, 1, nil, nil}, {{7, 71}, 1, nil, nil}},
-               {{9, 90}, 1, nil, nil}}}
+             %Node{
+               value: {5, 50},
+               height: 4,
+               left: %Node{
+                 value: {1, 10},
+                 height: 2,
+                 left: nil,
+                 right: %Node{
+                   value: {2, 20},
+                   height: 1,
+                   left: nil,
+                   right: nil
+                 }
+               },
+               right: %Node{
+                 value: {7, 700},
+                 height: 3,
+                 left: %Node{
+                   value: {7, 72},
+                   height: 2,
+                   left: %Node{
+                     value: {7, 73},
+                     height: 1,
+                     left: nil,
+                     right: nil
+                   },
+                   right: %Node{
+                     value: {7, 71},
+                     height: 1,
+                     left: nil,
+                     right: nil
+                   }
+                 },
+                 right: %Node{
+                   value: {9, 90},
+                   height: 1,
+                   left: nil,
+                   right: nil
+                 }
+               }
+             }
 
     tree = AVLTree.put_upper(tree, {7, 74})
     tree = AVLTree.put_upper(tree, {7, 75})
@@ -220,10 +386,37 @@ defmodule AVLTreeTest do
     #   ┌┴───┐       ┌───┴───┐               ┌───┴┐
     #     {2, 20} {7, 73} {7, 71}         {7, 76}
     assert tree.root ==
-             {{7, 700}, 4,
-              {{5, 50}, 3, {{1, 10}, 2, nil, {{2, 20}, 1, nil, nil}},
-               {{7, 72}, 2, {{7, 73}, 1, nil, nil}, {{7, 71}, 1, nil, nil}}},
-              {{7, 75}, 3, {{7, 74}, 1, nil, nil}, {{9, 90}, 2, {{7, 76}, 1, nil, nil}, nil}}}
+             %Node{
+               value: {7, 700},
+               height: 4,
+               left: %Node{
+                 value: {5, 50},
+                 height: 3,
+                 left: %Node{
+                   value: {1, 10},
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: {2, 20}, height: 1, left: nil, right: nil}
+                 },
+                 right: %Node{
+                   value: {7, 72},
+                   height: 2,
+                   left: %Node{value: {7, 73}, height: 1, left: nil, right: nil},
+                   right: %Node{value: {7, 71}, height: 1, left: nil, right: nil}
+                 }
+               },
+               right: %Node{
+                 value: {7, 75},
+                 height: 3,
+                 left: %Node{value: {7, 74}, height: 1, left: nil, right: nil},
+                 right: %Node{
+                   value: {9, 90},
+                   height: 2,
+                   left: %Node{value: {7, 76}, height: 1, left: nil, right: nil},
+                   right: nil
+                 }
+               }
+             }
 
     tree = AVLTree.delete_upper(tree, {7, nil})
 
@@ -235,10 +428,32 @@ defmodule AVLTreeTest do
     #   ┌┴───┐       ┌───┴───┐
     #     {2, 20} {7, 73} {7, 71}
     assert tree.root ==
-             {{7, 700}, 4,
-              {{5, 50}, 3, {{1, 10}, 2, nil, {{2, 20}, 1, nil, nil}},
-               {{7, 72}, 2, {{7, 73}, 1, nil, nil}, {{7, 71}, 1, nil, nil}}},
-              {{7, 75}, 2, {{7, 74}, 1, nil, nil}, {{9, 90}, 1, nil, nil}}}
+             %Node{
+               value: {7, 700},
+               height: 4,
+               left: %Node{
+                 value: {5, 50},
+                 height: 3,
+                 left: %Node{
+                   value: {1, 10},
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: {2, 20}, height: 1, left: nil, right: nil}
+                 },
+                 right: %Node{
+                   value: {7, 72},
+                   height: 2,
+                   left: %Node{value: {7, 73}, height: 1, left: nil, right: nil},
+                   right: %Node{value: {7, 71}, height: 1, left: nil, right: nil}
+                 }
+               },
+               right: %Node{
+                 value: {7, 75},
+                 height: 2,
+                 left: %Node{value: {7, 74}, height: 1, left: nil, right: nil},
+                 right: %Node{value: {9, 90}, height: 1, left: nil, right: nil}
+               }
+             }
 
     tree = AVLTree.delete_lower(tree, {7, nil})
 
@@ -250,10 +465,32 @@ defmodule AVLTreeTest do
     #   ┌┴───┐      ┌┴───┐
     #     {2, 20}     {7, 71}
     assert tree.root ==
-             {{7, 700}, 4,
-              {{5, 50}, 3, {{1, 10}, 2, nil, {{2, 20}, 1, nil, nil}},
-               {{7, 72}, 2, nil, {{7, 71}, 1, nil, nil}}},
-              {{7, 75}, 2, {{7, 74}, 1, nil, nil}, {{9, 90}, 1, nil, nil}}}
+             %Node{
+               value: {7, 700},
+               height: 4,
+               left: %Node{
+                 value: {5, 50},
+                 height: 3,
+                 left: %Node{
+                   value: {1, 10},
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: {2, 20}, height: 1, left: nil, right: nil}
+                 },
+                 right: %Node{
+                   value: {7, 72},
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: {7, 71}, height: 1, left: nil, right: nil}
+                 }
+               },
+               right: %Node{
+                 value: {7, 75},
+                 height: 2,
+                 left: %Node{value: {7, 74}, height: 1, left: nil, right: nil},
+                 right: %Node{value: {9, 90}, height: 1, left: nil, right: nil}
+               }
+             }
 
     tree = AVLTree.delete_lower(tree, {7, nil})
 
@@ -265,9 +502,27 @@ defmodule AVLTreeTest do
     #   ┌┴───┐
     #     {2, 20}
     assert tree.root ==
-             {{7, 700}, 4,
-              {{5, 50}, 3, {{1, 10}, 2, nil, {{2, 20}, 1, nil, nil}}, {{7, 71}, 1, nil, nil}},
-              {{7, 75}, 2, {{7, 74}, 1, nil, nil}, {{9, 90}, 1, nil, nil}}}
+             %Node{
+               value: {7, 700},
+               height: 4,
+               left: %Node{
+                 value: {5, 50},
+                 height: 3,
+                 left: %Node{
+                   value: {1, 10},
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: {2, 20}, height: 1, left: nil, right: nil}
+                 },
+                 right: %Node{value: {7, 71}, height: 1, left: nil, right: nil}
+               },
+               right: %Node{
+                 value: {7, 75},
+                 height: 2,
+                 left: %Node{value: {7, 74}, height: 1, left: nil, right: nil},
+                 right: %Node{value: {9, 90}, height: 1, left: nil, right: nil}
+               }
+             }
 
     tree = AVLTree.delete_lower(tree, {7, nil})
 
@@ -277,8 +532,22 @@ defmodule AVLTreeTest do
     #    ┌───┴───┐       ┌───┴───┐
     # {1, 10} {5, 50} {7, 74} {9, 90}
     assert tree.root ==
-             {{7, 700}, 3, {{2, 20}, 2, {{1, 10}, 1, nil, nil}, {{5, 50}, 1, nil, nil}},
-              {{7, 75}, 2, {{7, 74}, 1, nil, nil}, {{9, 90}, 1, nil, nil}}}
+             %Node{
+               value: {7, 700},
+               height: 3,
+               left: %Node{
+                 value: {2, 20},
+                 height: 2,
+                 left: %Node{value: {1, 10}, height: 1, left: nil, right: nil},
+                 right: %Node{value: {5, 50}, height: 1, left: nil, right: nil}
+               },
+               right: %Node{
+                 value: {7, 75},
+                 height: 2,
+                 left: %Node{value: {7, 74}, height: 1, left: nil, right: nil},
+                 right: %Node{value: {9, 90}, height: 1, left: nil, right: nil}
+               }
+             }
 
     tree = AVLTree.delete_upper(tree, {7, nil})
 
@@ -289,8 +558,22 @@ defmodule AVLTreeTest do
     # {1, 10} {5, 50}     {9, 90}
 
     assert tree.root ==
-             {{7, 700}, 3, {{2, 20}, 2, {{1, 10}, 1, nil, nil}, {{5, 50}, 1, nil, nil}},
-              {{7, 74}, 2, nil, {{9, 90}, 1, nil, nil}}}
+             %Node{
+               value: {7, 700},
+               height: 3,
+               left: %Node{
+                 value: {2, 20},
+                 height: 2,
+                 left: %Node{value: {1, 10}, height: 1, left: nil, right: nil},
+                 right: %Node{value: {5, 50}, height: 1, left: nil, right: nil}
+               },
+               right: %Node{
+                 value: {7, 74},
+                 height: 2,
+                 left: nil,
+                 right: %Node{value: {9, 90}, height: 1, left: nil, right: nil}
+               }
+             }
 
     assert ^tree = AVLTree.delete_upper(tree, {6, nil})
     assert ^tree = AVLTree.delete_lower(tree, {6, nil})
@@ -311,7 +594,22 @@ defmodule AVLTreeTest do
     # ┌┴┐ ┌┴┐
     # 1   7 9
     assert tree.root ==
-             {6, 3, {5, 2, {1, 1, nil, nil}, nil}, {8, 2, {7, 1, nil, nil}, {9, 1, nil, nil}}}
+             %Node{
+               value: 6,
+               height: 3,
+               left: %Node{
+                 value: 5,
+                 height: 2,
+                 left: %Node{value: 1, height: 1, left: nil, right: nil},
+                 right: nil
+               },
+               right: %Node{
+                 value: 8,
+                 height: 2,
+                 left: %Node{value: 7, height: 1, left: nil, right: nil},
+                 right: %Node{value: 9, height: 1, left: nil, right: nil}
+               }
+             }
 
     tree = AVLTree.delete(tree, 1)
     assert Enum.to_list(tree) == [5, 6, 7, 8, 9]
@@ -322,7 +620,17 @@ defmodule AVLTreeTest do
     # 5  8
     #   ┌┴┐
     #   7 9
-    assert tree.root == {6, 3, {5, 1, nil, nil}, {8, 2, {7, 1, nil, nil}, {9, 1, nil, nil}}}
+    assert tree.root == %Node{
+             value: 6,
+             height: 3,
+             left: %Node{value: 5, height: 1, left: nil, right: nil},
+             right: %Node{
+               value: 8,
+               height: 2,
+               left: %Node{value: 7, height: 1, left: nil, right: nil},
+               right: %Node{value: 9, height: 1, left: nil, right: nil}
+             }
+           }
 
     tree = AVLTree.delete(tree, 8)
     assert Enum.to_list(tree) == [5, 6, 7, 9]
@@ -333,7 +641,17 @@ defmodule AVLTreeTest do
     # 5  7
     #   ┌┴┐
     #     9
-    assert tree.root == {6, 3, {5, 1, nil, nil}, {7, 2, nil, {9, 1, nil, nil}}}
+    assert tree.root == %Node{
+             value: 6,
+             height: 3,
+             left: %Node{value: 5, height: 1, left: nil, right: nil},
+             right: %Node{
+               value: 7,
+               height: 2,
+               left: nil,
+               right: %Node{value: 9, height: 1, left: nil, right: nil}
+             }
+           }
 
     tree = Enum.into([3, 1, 2, 4, 8, 0], tree)
     assert Enum.to_list(tree) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -347,9 +665,32 @@ defmodule AVLTreeTest do
     # ┌┴┐ ┌┴┐
     # 0 2 4
     assert tree.root ==
-             {6, 4,
-              {3, 3, {1, 2, {0, 1, nil, nil}, {2, 1, nil, nil}}, {5, 2, {4, 1, nil, nil}, nil}},
-              {8, 2, {7, 1, nil, nil}, {9, 1, nil, nil}}}
+             %Node{
+               value: 6,
+               height: 4,
+               left: %Node{
+                 value: 3,
+                 height: 3,
+                 left: %Node{
+                   value: 1,
+                   height: 2,
+                   left: %Node{value: 0, height: 1, left: nil, right: nil},
+                   right: %Node{value: 2, height: 1, left: nil, right: nil}
+                 },
+                 right: %Node{
+                   value: 5,
+                   height: 2,
+                   left: %Node{value: 4, height: 1, left: nil, right: nil},
+                   right: nil
+                 }
+               },
+               right: %Node{
+                 value: 8,
+                 height: 2,
+                 left: %Node{value: 7, height: 1, left: nil, right: nil},
+                 right: %Node{value: 9, height: 1, left: nil, right: nil}
+               }
+             }
 
     tree = AVLTree.delete(tree, 6)
     assert Enum.to_list(tree) == [0, 1, 2, 3, 4, 5, 7, 8, 9]
@@ -363,8 +704,27 @@ defmodule AVLTreeTest do
     # ┌┴┐
     # 0 2
     assert tree.root ==
-             {5, 4, {3, 3, {1, 2, {0, 1, nil, nil}, {2, 1, nil, nil}}, {4, 1, nil, nil}},
-              {8, 2, {7, 1, nil, nil}, {9, 1, nil, nil}}}
+             %Node{
+               value: 5,
+               height: 4,
+               left: %Node{
+                 value: 3,
+                 height: 3,
+                 left: %Node{
+                   value: 1,
+                   height: 2,
+                   left: %Node{value: 0, height: 1, left: nil, right: nil},
+                   right: %Node{value: 2, height: 1, left: nil, right: nil}
+                 },
+                 right: %Node{value: 4, height: 1, left: nil, right: nil}
+               },
+               right: %Node{
+                 value: 8,
+                 height: 2,
+                 left: %Node{value: 7, height: 1, left: nil, right: nil},
+                 right: %Node{value: 9, height: 1, left: nil, right: nil}
+               }
+             }
 
     tree = Enum.into([0, 3, 2, 1, 4, 8, 7, 9, 5, 6, 11, 12, 10, 14, 13, 15], AVLTree.new())
     tree = AVLTree.delete(tree, 4)
@@ -381,9 +741,47 @@ defmodule AVLTreeTest do
     #         ┌┴─┐    ┌┴─┐
     #         8 10      15
     assert tree.root ==
-             {5, 5, {2, 3, {0, 2, nil, {1, 1, nil, nil}}, {3, 1, nil, nil}},
-              {11, 4, {7, 3, {6, 1, nil, nil}, {9, 2, {8, 1, nil, nil}, {10, 1, nil, nil}}},
-               {13, 3, {12, 1, nil, nil}, {14, 2, nil, {15, 1, nil, nil}}}}}
+             %Node{
+               value: 5,
+               height: 5,
+               left: %Node{
+                 value: 2,
+                 height: 3,
+                 left: %Node{
+                   value: 0,
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: 1, height: 1, left: nil, right: nil}
+                 },
+                 right: %Node{value: 3, height: 1, left: nil, right: nil}
+               },
+               right: %Node{
+                 value: 11,
+                 height: 4,
+                 left: %Node{
+                   value: 7,
+                   height: 3,
+                   left: %Node{value: 6, height: 1, left: nil, right: nil},
+                   right: %Node{
+                     value: 9,
+                     height: 2,
+                     left: %Node{value: 8, height: 1, left: nil, right: nil},
+                     right: %Node{value: 10, height: 1, left: nil, right: nil}
+                   }
+                 },
+                 right: %Node{
+                   value: 13,
+                   height: 3,
+                   left: %Node{value: 12, height: 1, left: nil, right: nil},
+                   right: %Node{
+                     value: 14,
+                     height: 2,
+                     left: nil,
+                     right: %Node{value: 15, height: 1, left: nil, right: nil}
+                   }
+                 }
+               }
+             }
 
     tree = tree |> AVLTree.delete(3) |> AVLTree.delete(2)
     assert Enum.to_list(tree) == [0, 1, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
@@ -400,10 +798,42 @@ defmodule AVLTreeTest do
     #       ┌┴─┐
     #       8 10
     assert tree.root ==
-             {11, 5,
-              {5, 4, {1, 2, {0, 1, nil, nil}, nil},
-               {7, 3, {6, 1, nil, nil}, {9, 2, {8, 1, nil, nil}, {10, 1, nil, nil}}}},
-              {13, 3, {12, 1, nil, nil}, {14, 2, nil, {15, 1, nil, nil}}}}
+             %Node{
+               value: 11,
+               height: 5,
+               left: %Node{
+                 value: 5,
+                 height: 4,
+                 left: %Node{
+                   value: 1,
+                   height: 2,
+                   left: %Node{value: 0, height: 1, left: nil, right: nil},
+                   right: nil
+                 },
+                 right: %Node{
+                   value: 7,
+                   height: 3,
+                   left: %Node{value: 6, height: 1, left: nil, right: nil},
+                   right: %Node{
+                     value: 9,
+                     height: 2,
+                     left: %Node{value: 8, height: 1, left: nil, right: nil},
+                     right: %Node{value: 10, height: 1, left: nil, right: nil}
+                   }
+                 }
+               },
+               right: %Node{
+                 value: 13,
+                 height: 3,
+                 left: %Node{value: 12, height: 1, left: nil, right: nil},
+                 right: %Node{
+                   value: 14,
+                   height: 2,
+                   left: nil,
+                   right: %Node{value: 15, height: 1, left: nil, right: nil}
+                 }
+               }
+             }
   end
 
   test "view" do
